@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Gestión de Productos</title>
+
+<style>
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        background: linear-gradient(120deg, #4e73df, #1cc88a);
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 40px auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    h2 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 25px;
+    }
+
+    form {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    form input {
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
+
+    form button {
+        grid-column: span 2;
+        padding: 12px;
+        background: #4e73df;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    form button:hover {
+        background: #375adf;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    table th {
+        background: #f4f6f8;
+        padding: 10px;
+        text-align: left;
+    }
+
+    table td {
+        padding: 10px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .btn {
+        padding: 6px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+    .editar {
+        background: #f6c23e;
+        color: #000;
+    }
+
+    .eliminar {
+        background: #e74a3b;
+        color: #fff;
+    }
+
+    .acciones button {
+        margin-right: 5px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Gestión de Productos</h2>
+
+    <form id="formProducto">
+        <input type="hidden" id="id">
+
+        <input type="text" id="nombre" placeholder="Nombre del producto" required>
+        <input type="number" id="precio" placeholder="Precio" required>
+
+        <input type="number" id="stock" placeholder="Stock" required>
+        <input type="text" id="descripcion" placeholder="Descripción">
+
+        <button type="submit">Guardar producto</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tabla"></tbody>
+    </table>
+</div>
+
+<script>
+const url = "http://localhost:8080/productos";
+
+function cargar() {
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            tabla.innerHTML = "";
+            data.forEach(p => {
+                tabla.innerHTML += `
+                    <tr>
+                        <td>${p.id}</td>
+                        <td>${p.nombre}</td>
+                        <td>$${p.precio}</td>
+                        <td>${p.stock}</td>
+                        <td class="acciones">
+                            <button class="btn editar" onclick='editar(${JSON.stringify(p)})'>Editar</button>
+                            <button class="btn eliminar" onclick='eliminar(${p.id})'>Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        });
+}
+
+formProducto.onsubmit = e => {
+    e.preventDefault();
+
+    const producto = {
+        nombre: nombre.value,
+        precio: precio.value,
+        stock: stock.value,
+        descripcion: descripcion.value
+    };
+
+    const idVal = id.value;
+fetch(idVal ? `${url}/${idVal}` : url, {
+    method: idVal ? "PUT" : "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(producto)
+})
+.then(res => res.json())
+.then(data => {
+    alert(data.mensaje + (data.estado ? " | Estado: " + data.estado : ""));
+    formProducto.reset();
+    id.value = "";
+    cargar();
+});
+};
+
+function editar(p) {
+    id.value = p.id;
+    nombre.value = p.nombre;
+    precio.value = p.precio;
+    stock.value = p.stock;
+    descripcion.value = p.descripcion;
+}
+
+function eliminar(id) {
+    if (confirm("¿Deseas eliminar este producto?")) {
+        fetch(`${url}/${id}`, { method: "DELETE" })
+        .then(res => res.json())
+        .then(data => {
+        alert(data.mensaje);
+        cargar();
+    });
+    }
+}
+
+cargar();
+</script>
+
+</body>
+</html>
