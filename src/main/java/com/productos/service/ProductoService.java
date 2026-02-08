@@ -2,6 +2,7 @@ package com.productos.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -71,5 +72,12 @@ public class ProductoService {
 
   public boolean existe(Long id) {
     return repo.existsById(id);
+  }
+
+  public List<Producto> obtenerProductosConMayorStock() {
+    return repo.findAll()
+            .stream()
+            .sorted((p1, p2) -> Integer.compare(p2.getStock(), p1.getStock()))
+            .collect(Collectors.toList());
   }
 }
