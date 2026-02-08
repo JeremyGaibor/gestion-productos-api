@@ -77,4 +77,10 @@ public Producto obtenerPorId(@PathVariable Long id) {
 
   return response;
   }
+
+  // Endpoint que permite obtener los productos con mayor stock
+  @GetMapping("/mayor-stock")
+  public List<Producto> productosConMayorStock() {
+     return service.obtenerProductosConMayorStock();
+  }
 }
