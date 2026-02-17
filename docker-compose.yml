@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+
+  mysql-productos:
+    image: mysql:8.0
+    container_name: mysql-productos
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: productosdb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpass
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  api-productos:
+    build: .
+    container_name: api-productos
+    restart: always
+    depends_on:
+      - mysql-productos
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-productos:3306/productosdb
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: userpass
+
+volumes:
+  mysql_data:
